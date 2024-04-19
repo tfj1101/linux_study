@@ -1,0 +1,70 @@
+linux环境下C语言连接数据库
+
+1.初始化句柄：mysql_init()
+    MYSQL *mysql_init(MYSQL *mysql)
+
+    分配或初始化与mysql_real_connect()相适应的MYSQL对象。如果mysql是NULL指针，该函数将分配、初始化、并返回新对象。否则，将初始化对象，并返回对象的地址。如果mysql_init()分配了新的对象，当调用mysql_close()来关闭连接时。将释放该对象。初始化的MYSQL*句柄。如果无足够内存以分配新的对象，返回NULL。
+
+2.连接数据库：mysql_real_connect()
+    MYSQL *mysql_real_connect(MYSQL *mysql, const char *host, const char *user, const char *passwd, const char *db, unsigned int port, const char *unix_socket, unsigned long clientflag)
+
+    第1个参数是已有MYSQL结构的地址。调用mysql_real_connect()之前，必须调用mysql_init()来初始化MYSQL结构。
+
+    “host”的值必须是主机名或IP地址。如果“host”是NULL或字符串"localhost"，连接将被视为与本地主机的连接。
+
+    “user”参数包含用户的MySQL登录ID。如果“user”是NULL或空字符串""，用户将被视为当前用户。在UNIX环境下，它是当前的登录名。
+
+    “passwd”参数包含用户的密码。如果“passwd”是NULL，仅会对该用户的（拥有1个空密码字段的）用户表中的条目进行匹配检查。这样，数据库管理员就能按特定的方式设置MySQL权限系统，根据用户是否拥有指定的密码，用户将获得不同的权限。
+
+    “db”是数据库名称。如果db为NULL，连接会将默认的数据库设为该值。
+
+    如果“port”不是0，其值将用作TCP/IP连接的端口号。（意思就是如果你修改过mysql默认的3306的端口话这里也需要修改成相应的 端口号，一般默认为0）
+
+    “unix_socket”一般默认为NULL
+
+    “client_flag”的值通常为0
+
+    如果连接成功，返回MYSQL*连接句柄。如果连接失败，返回NULL。对于成功的连接，返回值与第1个参数的值相同。
+
+3. 数据库操作
+    3.1 mysql_query()
+    int mysql_query(MYSQL *mysql, const char *query)
+
+    MYSQL连接句柄和一个SQL语句字符串作为参数。执行成功时，返回0，否则返回非0值。经过查询语句后它的返回一个结果集对象存储在mysql_store_result()中。
+
+    3.2 mysql_store_result()
+    MYSQL_RES *mysql_store_result(MYSQL *mysql)
+
+    对于成功检索了数据的每个查询（SELECT、SHOW、DESCRIBE、EXPLAIN、CHECK TABLE等），调用mysql_store_result对结果集进行相应的操作。
+
+    mysql_store_result()将查询的全部结果读取到客户端，分配1个MYSQL_RES结构，并将结果置于该结构中。
+
+    如果查询未返回结果集，mysql_store_result()将返回Null指针（例如，如果查询是INSERT语句）。或者读取结果集失败，mysql_store_result()还会返回Null指针。
+
+    3.3 mysql_fetch_row()
+    MYSQL_ROW mysql_fetch_row(MYSQL_RES *result)
+
+    该函数需要一个MYSQL_RES结构体指针作为参数，并返回一个MYSQL_ROW结构体指针，该结构体指针包含了查询结果中的一行数据，返回值为下一行的MYSQL_ROW结构。如果没有更多要检索的行或出现了错误，返回NULL。
+
+    3.4 mysql_num_fields()
+    unsigned int mysql_num_fields(MYSQL_RES *result)
+
+    返回结果集中的行数。
+
+    3.5 mysql_field_count()
+    unsigned int mysql_field_count(MYSQL *mysql)
+
+    表示结果集中列数的无符号整数，注意这里的参数是mysql的句柄。
+
+    3.6 mysql_free_result()
+    void mysql_free_result(MYSQL_RES *result)
+
+    一旦完成了对结果集的操作，必须调用mysql_free_result()。
+
+    3.7 mysql_close()
+    void mysql_close(MYSQL *mysql)
+
+    关闭前面打开的连接。如果句柄是由mysql_init()或mysql_connect()自动分配的，mysql_close()还将解除分配由mysql指向的连接句柄。
+
+    参考资料
+    Myql官方说明：https://www.mysqlzh.com/api/51.html
